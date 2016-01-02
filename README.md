@@ -1,5 +1,5 @@
 # Overview
-libBlondie is a memoization library for c. Ideally, you'd only expect it work with functions where the parameters are all primitive. 
+libBlondie is a memoization library for c. Ideally, you'd only expect it work with functions where the parameters are all pass by value and non-struct. 
 
 ## Notes
 This isn't a complete library as of yet, and shouldn't be used. However, example syntax and performance implications can be seen below.
@@ -60,7 +60,8 @@ The output shows no difference
 
 Similarly, finding the 40th fibonacci number takes exponentially longer when it's not memoized, but takes about the same amount of time when it is memoized.
 
-> $ time examples/fibonacci 40 > ~/fib.out        
+> $ time examples/fibonacci 40 > ~/fib.out
+> 
 > real    0m3.702s
 > user    0m3.690s
 > sys     0m0.000s
@@ -75,7 +76,7 @@ Similarly, finding the 40th fibonacci number takes exponentially longer when it'
 > $
 
 ## Use cases for libBlondie
-Here I've deliberately chosen a great case for memoization. It shouldn't be used in cases where you expect the target function to produce side effects outside of the function, and should only be used with functions that take only primitive parameters. 
+Here I've deliberately chosen a great case for memoization. It shouldn't be used in cases where you expect the target function to produce side effects outside of the function, and should only be used with functions that take only non-struct, non-reference parameters. 
 
 Ideal uses abound, and aren't just limited to recursive functions.
 
