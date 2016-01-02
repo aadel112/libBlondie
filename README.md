@@ -4,7 +4,15 @@ libBlondie is a memoization library for c. Ideally, you'd only expect it work wi
 ## Notes
 This isn't a complete library as of yet, and shouldn't be used. However, example syntax and performance implications can be seen below.
 
-# Usage
+## Installation
+Typical
+```
+./configure
+make
+make install
+```
+
+## Usage
 ```
 BlondieMemoize(return type, function name, function body, $P(parameter list), parameter list without types)
 ```
