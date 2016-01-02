@@ -75,10 +75,10 @@ Similarly, finding the 40th fibonacci number takes exponentially longer when it'
 > $
 
 ## Use cases for libBlondie
-Here I've deliberately chosen a great case for memouzation. It shouldn't be used in cases where you expect the target function to priduce side effects outside of the function, and should inly be used with functions that take only primitive parameters. 
+Here I've deliberately chosen a great case for memoization. It shouldn't be used in cases where you expect the target function to produce side effects outside of the function, and should only be used with functions that take only primitive parameters. 
 
-Ideal uses abound, and aren't just limited to recursuve functions.
+Ideal uses abound, and aren't just limited to recursive functions.
 
-1. Functions that shell out to read a file because if the file size, and grep their ourtput from the file
+1. Functions that shell out to read a file because of the file size, and grep their output from the file
 2. Functions that return expensive computed values
 3. Anything that returns the same output for the same input.
