@@ -1,5 +1,7 @@
 # Overview
-libBlondie is a memoization library for c. Ideally, you'd only expect it work with functions where the parameters are all pass by value and non-struct. 
+libBlondie is a memoization library for c. Basically, libBlondie provides an effective and simple caching mechanism for your c code by replacing a given function by code that maintains a hash of the parameters and return, and first checks that hash before executing.
+
+Ideally, you'd only expect it work with functions where the parameters are all pass by value and non-struct. 
 
 ## Notes
 This isn't a complete library as of yet, and shouldn't be used. However, example syntax and performance implications can be seen below.
