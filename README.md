@@ -105,3 +105,4 @@ Ideal uses abound, and aren't just limited to recursive functions.
 1. Functions that shell out to read a file because of the file size, and grep their output from the file
 2. Functions that return expensive computed values
 3. Anything that returns the same output for the same input.
+
