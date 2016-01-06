@@ -5,7 +5,8 @@
 #include <unistd.h>
 #include "blondie.h"
 
-#define D "/storage/emulated/0/Download/"
+// #define D "/storage/emulated/0/Download/"
+#define D "/storage/emulated/0/DCIM/Camera/"
 #define LEN 1024
 
 int n = 0;
@@ -71,16 +72,14 @@ void listd(char* directory) {
     n = i;
 }
 
-BlondieMemoize( int, fsize, {
+BlondieMemoize( int, fsize,  $P(char* filename), $V(filename), 
+    {
         struct stat st;
         stat(filename, &st);
         return st.st_size;
-    },
-    $P(char* filename), filename 
+    }   
 )
 
-BlondieMemoize( int, fexists, {
-        return access( filename, F_OK ) != -1;
-    }, 
-    $P(char* filename), filename
+BlondieMemoize( int, fexists, $P(char* filename), $V(filename),
+    { return access( filename, F_OK ) != -1; }
 )

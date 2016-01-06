@@ -23,6 +23,7 @@
 
 #define STR(s) str(s)
 #define __$P(...)  __VA_ARGS__
+#define __$V(...)  __VA_ARGS__
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
 #define STRMOD(x) STR(%s)
@@ -93,16 +94,16 @@ enum t_typename {
 } generic;
 
 
-#define BlondieMemoize(r, n, b, tps, args...) \
+#define BlondieMemoize(r, n, tps, vps, b...) \
     r CAT( __, n )( CAT( __, tps) ); \
     r CAT( __, n )( CAT( __, tps) ) b  \
 \
     r n( CAT(__, tps) ) { \
         char key[MSTR]; \
-        FOR_EACH(SETMOD, args) \
+        FOR_EACH(SETMOD, CAT(__, vps)) \
         char fmt[MSTR]; \
-        sprintf(fmt, FOR_EACH(STRMOD, args)  FOR_EACH(MODARGNAMECOMMA, args)); \
-        sprintf(key, fmt, args); \
+        sprintf(fmt, FOR_EACH(STRMOD, CAT(__,vps))  FOR_EACH(MODARGNAMECOMMA, CAT(__,vps))); \
+        sprintf(key, fmt, CAT(__,vps)); \
         int crc = BlondieCrc(key); \
 \
         if( is_value_stored(crc) && !strcmp(__h.key_string[crc], key) && !strcmp(__h.fn[crc], STR(n)) ) { \
@@ -111,7 +112,7 @@ enum t_typename {
             strncpy(__h.fn[crc], STR(n), strlen(STR(n))> SHORTSTR ? SHORTSTR : strlen(STR(n)) ); \
             strncpy(__h.key_string[crc], key, strlen(key)> SHORTSTR ? SHORTSTR : strlen(key) ); \
             __h.is_stored[crc] = DEF; \
-            __HV(__h, crc, n) = CAT( __, n )( args ); \
+            __HV(__h, crc, n) = CAT( __, n )( CAT(__,vps) ); \
             return __HV(__h, crc, n); \
         } \
     } 
@@ -128,7 +129,6 @@ enum t_typename {
     getMod(TYPE_OF_COMMA(a)));
 
 long getCRC(char message[], int length);
-int get_crc( char* f, ... );
 int is_value_stored( int crc );
 char* getMod(enum t_typename t);
 

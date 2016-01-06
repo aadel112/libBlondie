@@ -15,8 +15,17 @@ make install
 ```
 
 ## Usage
+First inlcude the header...
+
 ```
-BlondieMemoize(return type, function name, function body, $P(parameter list), parameter list without types)
+#include <blondie.h>
+```
+
+
+Then rewrite the function like so.
+
+```
+BlondieMemoize(return type, function name, $P(parameter list), $V(parameter list without types) , function body)
 ```
 
 ## Examples
@@ -37,14 +46,14 @@ becomes
 
 ```
 BlondieMemoize( 
-    int, Fibonacci, {
+    int, Fibonacci, $P(int n), $V(n), {
     if ( n == 0 )
           return 0;
        else if ( n == 1 )
           return 1;
        else
           return (Fibonacci(n-1)+Fibonacci(n-2));
-    }, $P(int n), n
+    }
 )
 ```
 
@@ -106,3 +115,5 @@ Ideal uses abound, and aren't just limited to recursive functions.
 2. Functions that return expensive computed values
 3. Anything that returns the same output for the same input.
 
+## Note
+All examples were tested on my android phone using termux
