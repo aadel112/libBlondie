@@ -115,5 +115,10 @@ Ideal uses abound, and aren't just limited to recursive functions.
 2. Functions that return expensive computed values
 3. Anything that returns the same output for the same input.
 
+## TODO
+1. Use tpl to encode and decode parameters and returns. I think I should be able to build the parameter list into a struct and use tpl_bin on it. This would allow memoization of complex data types and references to a degree.
+2. Keep memo hashes of each memoized function with much smaller max lengths to speed up the cdc process, and simplify the code hopefully
+3. The goal is for this to be a drop-in memoization library that can memoize anything, and be as fast as possible.
+
 ## Note
 All examples were tested on my android phone using termux
