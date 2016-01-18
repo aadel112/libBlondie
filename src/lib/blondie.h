@@ -7,157 +7,94 @@
 
 #define INIT 1
 #define NOT_INIT 0
+// #define ARRMAX 256
+// #define ARRMAX 1024
 #define ARRMAX 32768
 // #define ARRMAX 1048576
 #define MSTR 100000
 #define SHORTSTR 1024
-#define CRCLEN 15
-#define MARGSTR 5
-#define DELIM @
+#define CRCLEN 9
+#define DELIM '\t'
 #define DEF 1
 
 #define die(); exit(1);
-#define tvar v_t_INT_BLONDIE
-#define fvar fun_t_INT_BLONDIE
 #define str(a) #a
 
+#define BLONDIE_CAT( dest, src ) \
+    if ( strlen(dest)+strlen(src) <= sizeof(dest) / sizeof(char*) ) { \
+        strcat( dest, src ); \
+    } 
 #define STR(s) str(s)
 #define __$P(...)  __VA_ARGS__
 #define __$V(...)  __VA_ARGS__
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
-#define STRMOD(x) STR(%s)
 #define COMMA() ,
-#define EMPTY() 
 #define COMMAFY(x) CAT(x, COMMA)
-#define TYPE_OF_COMMA(t) type_of(t) 
+#define EVAL(...) __VA_ARGS__
 
-#define MOD( v ) _Generic((v), \
-_Bool: STR(d),  unsigned char: STR(c),  \
-char: STR(c),   signed char: STR(c),  \
-short int: STR(d),  unsigned short int: STR(d),  \
-int: STR(d),  unsigned int: STR(d),  \
-long int: STR(ld),  unsigned long int: STR(ld),  \
-long long int: STR(ld),  unsigned long long int: STR(ld),  \
-float: STR(f),  double: STR(f),  \
-long double: STR(lf),  char *: STR(s),  \
-void *: STR(x),  int *: STR(d),  \
-default: STR(x))
+#define $HN(fn) CAT(__BLONDIE_HASH_, fn)
 
-#define __HV(hash, crc, x) _Generic((x), \
-_Bool: hash.t_BOOL_BLONDIE[crc], unsigned char: hash.t_UNSIGNED_CHAR_BLONDIE[crc], \
-char: hash.t_CHAR_BLONDIE[crc], signed char: hash.t_SIGNED_CHAR_BLONDIE[crc], \
-        short int: hash.t_SHORT_INT_BLONDIE[crc],         unsigned short int: hash.t_UNSIGNED_SHORT_INT_BLONDIE[crc],     \
-        int: hash.t_INT_BLONDIE[crc],                     unsigned int: hash.t_UNSIGNED_INT_BLONDIE[crc],      \
-        long int: hash.t_LONG_INT_BLONDIE[crc],           unsigned long int: hash.t_UNSIGNED_LONG_INT_BLONDIE[crc],    \
-        long long int: hash.t_LONG_LONG_INT_BLONDIE[crc], unsigned long long int: hash.t_UNSIGNED_LONG_LONG_INT_BLONDIE[crc], \
-        float: hash.t_FLOAT_BLONDIE[crc],                 double: hash.t_DOUBLE_BLONDIE[crc],                 \
-        long double: hash.t_LONG_DOUBLE_BLONDIE[crc],     char *: hash.t_POINTER_TO_CHAR_BLONDIE[crc],        \
-        void *: hash.t_POINTER_TO_VOID_BLONDIE[crc],      int *: hash.t_POINTER_TO_INT_BLONDIE[crc],         \
-        default: hash.t_LONG_LONG_INT_BLONDIE[crc])
+#define $HS(fn) struct getHStructName(fn)
 
+#define getHStructName( fn )  CAT(__BLONDIE_HASH_STRUCT_, fn) 
 
+#define DEFINE_HASH_STRUCT( r, fn ) \
+    $HS(fn) { \
+        int is_stored[ARRMAX]; \
+        char* key[ARRMAX]; \
+        r rval[ARRMAX]; \
+    };
 
-/* http://stackoverflow.com/questions/6280055/how-do-i-check-if-a-variable-is-of-a-certain-type-compare-two-types-in-c */
-#define type_of(x) _Generic((x), \
-_Bool: t_BOOL, unsigned char: t_UNSIGNED_CHAR, \
-char: t_CHAR, signed char: t_SIGNED_CHAR, \
-        short int: t_SHORT_INT,         unsigned short int: t_UNSIGNED_SHORT_INT,     \
-        int: t_INT,                     unsigned int: t_UNSIGNED_INT,      \
-        long int: t_LONG_INT,           unsigned long int: t_UNSIGNED_LONG_INT,    \
-        long long int: t_LONG_LONG_INT, unsigned long long int: t_UNSIGNED_LONG_LONG_INT, \
-        float: t_FLOAT,                 double: t_DOUBLE,                 \
-        long double: t_LONG_DOUBLE,     char *: t_POINTER_TO_CHAR,        \
-        void *: t_POINTER_TO_VOID,      int *: t_POINTER_TO_INT,         \
-        default: t_OTHER)
+#define SERIALIZE_AND_CAT_KEY( p ) { \
+    long sz = (2 * sizeof(p) ) + 1; \
+    char ctmpp[sz]; \
+    sprintf(ctmpp, "%X", crc32c((unsigned char*)&p)); \
+    BLONDIE_CAT( key, ctmpp ); \
+}
 
-enum t_typename {
-    t_BOOL,
-    t_UNSIGNED_CHAR,
-    t_CHAR,
-    t_SIGNED_CHAR,
-    t_SHORT_INT,
-    t_UNSIGNED_SHORT_INT,
-    t_INT,
-    t_UNSIGNED_INT,
-    t_LONG_INT,	
-    t_UNSIGNED_LONG_INT,
-    t_LONG_LONG_INT,
-    t_UNSIGNED_LONG_LONG_INT,
-    t_FLOAT,
-    t_DOUBLE,  
-    t_LONG_DOUBLE,   
-    t_POINTER_TO_CHAR,
-    t_POINTER_TO_VOID,
-    t_POINTER_TO_INT,
-    t_OTHER
-} generic;
-
+#define SERIALIZE_PARAMS(args) \
+    char key[MSTR] = "0x"; \
+    FOR_EACH( SERIALIZE_AND_CAT_KEY, args );
 
 #define BlondieMemoize(r, n, tps, vps, b...) \
+    /*define signature of memo function*/ \
     r CAT( __, n )( CAT( __, tps) ); \
+    /*write original function with __ prefix*/ \
     r CAT( __, n )( CAT( __, tps) ) b  \
 \
-    r n( CAT(__, tps) ) { \
-        char key[MSTR]; \
-        FOR_EACH(SETMOD, CAT(__, vps)) \
-        char fmt[MSTR]; \
-        sprintf(fmt, FOR_EACH(STRMOD, CAT(__,vps))  FOR_EACH(MODARGNAMECOMMA, CAT(__,vps))); \
-        sprintf(key, fmt, CAT(__,vps)); \
-        int crc = BlondieCrc(key); \
+    /*define args struct and function hash*/ \
+    DEFINE_HASH_STRUCT(r, n); \
+    $HS( n ) $HN( n ); \
 \
-        if( is_value_stored(crc) && !strcmp(__h.key_string[crc], key) && !strcmp(__h.fn[crc], STR(n)) ) { \
-            return __HV(__h, crc, n);  \
+    r n( CAT(__, tps) ) { \
+        printf("START\n"); \
+        /*declare my struct vars local to the new funcrion*/ \
+        /*set params to what's in the arguments to orignial function*/ \
+        SERIALIZE_PARAMS( CAT(__, vps) ); \
+        /*store params in param struct, serialize, and dump to hash for crc and dirty compare*/ \
+        long ikey = abs( strtoll( key, NULL, 0) ); \
+        long crc = ikey % ARRMAX; \
+\
+        if( $HN(n).is_stored[crc] && !strcmp($HN(n).key[crc], key) ) { \
+            return $HN(n).rval[crc]; \
         } else { \
-            strncpy(__h.fn[crc], STR(n), strlen(STR(n))> SHORTSTR ? SHORTSTR : strlen(STR(n)) ); \
-            strncpy(__h.key_string[crc], key, strlen(key)> SHORTSTR ? SHORTSTR : strlen(key) ); \
-            __h.is_stored[crc] = DEF; \
-            __HV(__h, crc, n) = CAT( __, n )( CAT(__,vps) ); \
-            return __HV(__h, crc, n); \
+            if($HN(n).is_stored[crc]) { \
+                free($HN(n).key[crc]); \
+            } \
+            /*allocate memory to hash key
+             * will need to free it each time this is hit 
+             * */ \
+            $HN(n).key[crc] = malloc( sizeof(key) ); \
+            strcpy($HN(n).key[crc], key); \
+            $HN(n).is_stored[crc] = 1; \
+            $HN(n).rval[crc] = CAT( __, n )( CAT(__,vps) ); \
+            return $HN(n).rval[crc]; \
         } \
+        return (r)NULL; \
     } 
 
-#define BlondieCrc( a ) getCRC( a, strlen(a) )
-#define GETMOD( v ) MOD(v)  
+#define BlondieCrc( a ) getCRC( a, strlen(a) ) % ARRMAX
+unsigned int crc32c(unsigned char *message);
 
-#define MODARGNAME(arg)  CAT(__ARG__, arg)
-#define MODARGNAMECOMMA(arg) , CAT(__ARG__, arg)
-
-#define SETMOD(a) \
-    char MODARGNAME(a)[MARGSTR]; \
-    sprintf(MODARGNAME(a), "%s", \
-    getMod(TYPE_OF_COMMA(a)));
-
-long getCRC(char message[], int length);
-int is_value_stored( int crc );
-char* getMod(enum t_typename t);
-
-typedef struct SimpleValueHash {
-    int is_stored[ARRMAX];
-    char key_string[ARRMAX][SHORTSTR];
-    char fn[ARRMAX][SHORTSTR];
-
-    _Bool t_BOOL_BLONDIE[ARRMAX];
-    unsigned char t_UNSIGNED_CHAR_BLONDIE[ARRMAX];
-    char t_CHAR_BLONDIE[ARRMAX];
-    signed char t_SIGNED_CHAR_BLONDIE[ARRMAX];
-    short int t_SHORT_INT_BLONDIE[ARRMAX];
-    unsigned short int t_UNSIGNED_SHORT_INT_BLONDIE[ARRMAX];
-    int t_INT_BLONDIE[ARRMAX];
-    unsigned int t_UNSIGNED_INT_BLONDIE[ARRMAX];
-    long int t_LONG_INT_BLONDIE[ARRMAX];
-    unsigned long int t_UNSIGNED_LONG_INT_BLONDIE[ARRMAX];
-    long long int t_LONG_LONG_INT_BLONDIE[ARRMAX];
-    unsigned long long int t_UNSIGNED_LONG_LONG_INT_BLONDIE[ARRMAX];
-    float t_FLOAT_BLONDIE[ARRMAX];
-    double t_DOUBLE_BLONDIE[ARRMAX];
-    long double t_LONG_DOUBLE_BLONDIE[ARRMAX];
-    char* t_POINTER_TO_CHAR_BLONDIE[ARRMAX];
-    void* t_POINTER_TO_VOID_BLONDIE[ARRMAX];
-    int* t_POINTER_TO_INT_BLONDIE[ARRMAX];
-} simple_value_hash;
-
-
-extern simple_value_hash __h;
-
-
+/*long getCRC(char message[], int length); */

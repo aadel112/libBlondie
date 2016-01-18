@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
     for( i = 0; i < n; ++i ) {
         printf("File %s, Size %d\n", files[i], fsize( files[i] ) );   
     }
+    return 0;
 }
 
 void sort_by_size() {
